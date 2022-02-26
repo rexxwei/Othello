@@ -8,7 +8,7 @@ import math
 from ai import AIOthello
 import random
 
-#=================== SETTINGS =====================#
+#----- SETTINGS -----
 
 STARTING_PLAYER = 'black'
 NUM_PLAYERS = 1
@@ -35,7 +35,7 @@ AI_DEBUG_SETTINGS = {
     'show_history': True
 }
 
-#==================================================#
+#--------------------
 
 class Board:
     def __init__(self):
@@ -64,50 +64,47 @@ class Board:
 
     def update(self, current_player):
         '''
-        Recalculates valid squares (dark green squares) based on the given color
+        Recalculates valid squares (pink squares) based on the given color
 
         current_player: the color to calculate for
         '''
 
         for square in self:
 
-            if square["background"] == 'dark olive green': # if dark green set to green
-                square.configure(bg='green')        
+            if square["background"] == 'light green': # if pink set to pink
+                square.configure(bg ='pink')        
 
-            # find new valid green squares and color them dark olive green
+            # find new valid pink squares and color them light green
             if square.color not in ['white', 'black']:
                 if square.is_valid(current_player):
                     square['state'] = 'normal'
-                    square.configure(bg='dark olive green')
+                    square.configure(bg = 'light green')
                 else:
                     square['state'] = 'disabled' # disable unplayable squares
 
-                
             square.configure(command= partial(square.take_turn, current_player))
 
         # if no moves available, enable all squares
         if len([square for square in self if square['state'] == 'normal']) == 0:
             for square in self:
-                if square['background'] == 'green':
-                    square['background'] = 'dark olive green'
+                if square['background'] == 'pink':
+                    square['background'] = 'light green'
                     square['state'] = 'normal'
 
         # show updated potential yields in debug
         if DEBUG and DEBUG_SETTINGS['square_text'] == 'potential_yield':
             for square in self:
-                if square['background'] == 'dark olive green':
+                if square['background'] == 'light green':
                     square.configure(text=square.potential_yield, font=("Courier", 20)) # show potential yield of squares
                 else:
                     square.configure(text='')
         
-
         # update text
         global turn_text, scoreboard, scoreboard_text
-        turn_text.configure(text=f"{current_player}'s turn")
+        turn_text.configure(text = f"Now {current_player}'s turn")
         scoreboard['black'] = math.floor(len([square for square in board if square.color == 'black'])/64 * 100)
         scoreboard['white'] = math.floor(len([square for square in board if square.color == 'white'])/64 * 100)
         scoreboard_text.configure(text=f"Black: {scoreboard['black']}%    White: {scoreboard['white']}% ") 
-
 
 
     def __iter__(self):
@@ -125,13 +122,14 @@ class Square(tk.Button):
     def __init__(self, master, id):
         master = master
         super().__init__(master)
-        self.configure(bg='green') # board color
+        # set default board color
+        self.configure(bg='gray')
         self.color = None
         self.id = id
         self.potential_yield = 1
 
         
-        ##### DEBUG #####
+        #----- DEBUG -----
         if DEBUG:
             if DEBUG_SETTINGS['square_text'] == 'id':
                 self.configure(text=self.id, font=("Courier", 20)) # show ID of squares
@@ -163,8 +161,7 @@ class Square(tk.Button):
                 # log flips in debug
                 if DEBUG:
                     print(f'flipping {square} to {current_player}')
-                
-
+            
 
     # called on square click
     def take_turn(self, color):
@@ -173,7 +170,7 @@ class Square(tk.Button):
         def is_game_over(turn_counter):
             # check for end of game
             colors = [square['background'] for square in board]
-            if 'green' not in colors and 'dark olive green' not in colors:
+            if 'pink' not in colors and 'light green' not in colors:
                 if LOG_TURNS:
                     print('\n---------- END OF GAME ------------')
                 if scoreboard['black'] > scoreboard['white']:
@@ -229,11 +226,11 @@ class Square(tk.Button):
                 # check for end of game
                 is_game_over(turn_counter)
 
-        ##### FOR TRAINING ######
+        # FOR TRAINING
         else:
             while not is_game_over(turn_counter):
                 
-                ##### AI 1
+                # AI_1
                 turn_counter += 1
                 if LOG_TURNS:
                     print(f'\n--- TURN {turn_counter} ({current_player}) (AI) ---')
@@ -246,7 +243,7 @@ class Square(tk.Button):
 
                 board.update(current_player)
 
-                ##### AI 2
+                # AI_2
                 turn_counter += 1
                 if LOG_TURNS:
                     print(f'\n--- TURN {turn_counter} ({current_player}) (AI) ---')
@@ -274,7 +271,7 @@ class Square(tk.Button):
 
     def is_valid(self, current_player):
         '''
-            Determines if the square is a valid space with respect to the given player. Returns a list of all rays or a Falsy object ([])
+        Determines if the square is a valid space with respect to the given player. Returns a list of all rays or a Falsy object ([])
         '''
 
         def get_rays():
@@ -379,16 +376,16 @@ def setup(starting_player):
     container.pack(padx=10, pady=10)
 
     # title
-    font_title = tkFont.Font(family="Lucida Grande", size=30)
-    tk.Label(container, text="Othello", font=font_title).pack()
+    # font_title = tkFont.Font(family="Times New Roman", size=30)
+    # tk.Label(container, text="AI Othello", font=font_title).pack()
     
-    font_turn = tkFont.Font(family="Lucida Grande", size=20)
-    turn_text = tk.Label(container, text=f"{starting_player}'s turn", font=font_turn)
+    font_turn = tkFont.Font(family="Times New Roman", size=20)
+    turn_text = tk.Label(container, text=f"Now {starting_player}'s turn", font=font_turn)
     turn_text.pack()
 
-    font_scoreboard = tkFont.Font(family="Lucida Grande", size=15)
-    scoreboard_text = tk.Label(container, text=f"Black: {scoreboard['black']}%    White: {scoreboard['white']}% ", font=font_scoreboard)
-    scoreboard_text.pack()
+    font_scoreboard = tkFont.Font(family="Times New Roman", size=15)
+    # scoreboard_text = tk.Label(container, text=f"Black: {scoreboard['black']}%    White: {scoreboard['white']}% ", font=font_scoreboard)
+    # scoreboard_text.pack()
 
     # board
     board_frame = tk.Frame(container)
@@ -414,7 +411,7 @@ def setup(starting_player):
 
             # Square setup
             square = Square(frame, square_id)
-            square.configure(command= partial(square.take_turn, 'black'), activebackground="dark green")
+            square.configure(command= partial(square.take_turn, 'black'), activebackground="pink")
             square.grid(sticky="wens") #makes the button expand
             
             board.append(square) # add square to board
@@ -435,11 +432,11 @@ def setup(starting_player):
                 square['state'] = 'disabled'
             else:
                 square['state'] = 'normal'
-                square.configure(bg='dark olive green')
+                square.configure(bg='light green')
             
             square_id += 1
 
-    ##### setup AI ######
+    # Setup AI
 
     if NUM_PLAYERS == 0:
         if AI_MAPPING == {}:
@@ -459,7 +456,7 @@ def setup(starting_player):
     return board, master
 
 
-################### DRIVER CODE ######################
+#--- DRIVER CODE ---
 
 # globals
 current_player = STARTING_PLAYER
@@ -508,6 +505,5 @@ def play(num_players, starting_player='black', first_ai='black', ai_mapping={}):
     if LOG_TURNS:
         print(f'{winner} wins!')
     return winner, master
-
 
 play(1)
